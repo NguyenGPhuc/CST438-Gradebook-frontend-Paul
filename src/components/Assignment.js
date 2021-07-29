@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
-import {SERVER_URL} from '../constants.js'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom'
+import Cookies from 'js-cookie';
 import Button from '@material-ui/core/Button';
 import Radio from '@material-ui/core/Radio';
 import {DataGrid} from '@material-ui/data-grid';
-import { Link } from 'react-router-dom'
-import Cookies from 'js-cookie';
+import {SERVER_URL} from '../constants.js'
 
 class Assignment extends Component {
     constructor(props) {
       super(props);
-      this.state = {rows: []};
+      this.state = {selected: 0, rows: []};
     };
  
    componentDidMount() {
@@ -19,9 +19,9 @@ class Assignment extends Component {
   }
  
   fetchAssignments = () => {
-    console.log("FETCH");
+    console.log("Assignment.fetchAssignments");
     const token = Cookies.get('XSRF-TOKEN');
-    fetch(SERVER_URL + '/gradebook', 
+    fetch(`${SERVER_URL}/gradebook`, 
       {  
         method: 'GET', 
         headers: { 'X-XSRF-TOKEN': token }, 
@@ -29,9 +29,9 @@ class Assignment extends Component {
       } )
     .then((response) => response.json()) 
     .then((responseData) => { 
-      console.log("FETCH RESP DATA:"+JSON.stringify(responseData));
       if (Array.isArray(responseData.assignments)) {
-        this.setState({ rows: responseData.assignments });
+        //  add to each row attribute id: index value of row  
+        this.setState({ rows: responseData.assignments.map((row, index) => ( { id: index, ...row } )) });
       } else {
         toast.error("Fetch failed.", {
           position: toast.POSITION.BOTTOM_LEFT
@@ -42,12 +42,11 @@ class Assignment extends Component {
   }
   
    onRadioClick = (event) => {
-     console.log("on click "+JSON.stringify(event.target.value));
+    console.log("Assignment.onRadioClick "+JSON.stringify(event.target.value));
     this.setState({selected: event.target.value});
   }
   
   render() {
-    
      const columns = [
       { field: 'id', hide: true },
       {
@@ -70,22 +69,19 @@ class Assignment extends Component {
       { field: 'courseTitle', headerName: 'Course', width: 300 },
       { field: 'dueDate', headerName: 'Due Date', width: 200 }
       ];
-    const irows = this.state.rows.map((row, index) => ( { id: index, ...row } )); 
-    return (
-      <div align="left" >
-            <h4>Assignment(s) ready to grade: </h4>
-             
-              <div style={{ height: 450, width: '100%', align:"left"   }}>
-                <DataGrid rows={irows} columns={columns} />
-              </div>              
-            
-            <p/> 
-            <Button component={Link} to={{pathname:'/gradebook' , assignment: this.state.rows[this.state.selected]}} 
-                    variant="outlined" color="primary" style={{margin: 10}}>
-              Grade
-            </Button>
-      </div>
-    )
+      return (
+          <div align="left" >
+                <h4>Assignment(s) ready to grade: </h4>
+                  <div style={{ height: 450, width: '100%', align:"left"   }}>
+                    <DataGrid rows={this.state.rows} columns={columns} />
+                  </div>                
+                <Button component={Link} to={{pathname:'/gradebook' , assignment: this.state.rows[this.state.selected]}} 
+                        variant="outlined" color="primary" disabled={this.state.rows.length==0}  style={{margin: 10}}>
+                  Grade
+                </Button>
+          </div>
+      )
   }
-}
+}  
+
 export default Assignment;

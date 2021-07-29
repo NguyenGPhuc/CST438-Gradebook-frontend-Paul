@@ -1,20 +1,18 @@
 import React, { Component } from 'react';
-import {SERVER_URL} from '../constants.js'
+import PropTypes from 'prop-types';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Grid from '@material-ui/core/Grid';
 import {DataGrid} from '@material-ui/data-grid';
 import Button from '@material-ui/core/Button';
 import Cookies from 'js-cookie';
+import {SERVER_URL} from '../constants.js'
 
-
-//  Gradebook 
-//    properties -  assignment:  
-
+//    required properties -  assignment:  
 class Gradebook extends Component {
     constructor(props) {
       super(props);
-      console.log("Gradebook cnstr "+ JSON.stringify(props.location.assignment));
+      console.log("Gradebook.cnstr "+ JSON.stringify(props.location.assignment));
       this.state = { rows :  [  ]};
     } 
     
@@ -23,9 +21,9 @@ class Gradebook extends Component {
     }
  
     fetchGrades = () => {
-      console.log("FETCH");
+      console.log("Gradebook.fetchGrades");
       const token = Cookies.get('XSRF-TOKEN');
-      fetch(SERVER_URL + '/gradebook/' + this.props.location.assignment.assignmentId , 
+      fetch(`${SERVER_URL}/gradebook/${this.props.location.assignment.assignmentId}`, 
         {  
           method: 'GET', 
           headers: { 'X-XSRF-TOKEN': token }, 
@@ -34,8 +32,11 @@ class Gradebook extends Component {
       .then((response) => response.json()) 
       .then((responseData) => { 
         if (Array.isArray(responseData.grades)) {
+          // add attribute "id" to each row as index of row, i.e. 0, 1, 2, ...  
           this.setState({ 
-            rows: responseData.grades,
+            rows: responseData.grades.map((row,index) => {
+                  return {id:index, assignmentGradeId: row.assignmentGradeId, name: row.name, email: row.email, grade: row.grade};
+            } )
           });
         } else {
           toast.error("Fetch failed.", {
@@ -49,9 +50,10 @@ class Gradebook extends Component {
    // when submit button pressed, send updated grades to back end 
    //  and then fetch the new grades.
    handleSubmit = ( ) => {
-      console.log("PUT");
+      console.log("Gradebook.handleSubmit");
       const token = Cookies.get('XSRF-TOKEN');
-      fetch(SERVER_URL + '/gradebook/' + this.props.location.assignment.assignmentId , 
+      
+      fetch(`${SERVER_URL}/gradebook/${this.props.location.assignment.assignmentId}` , 
           {  
             method: 'PUT', 
             headers: { 'Content-Type': 'application/json',
@@ -80,20 +82,13 @@ class Gradebook extends Component {
    };        
     
     // when user has entered a new grade, update the state
+    //  id    - index of row of grade change
+    //  props - contains the new grade
     handleEditCellChange = ({ id, field, props }) => {
-
-      // updating state when state is an array
-      this.setState(state => {
-        const rows = state.rows.map((item, j) => {
-          if (j === id) {
-            return {...item, grade:props.value}
-          } else {
-            return item;
-          }
-        });
-        const t = { rows, };
-        console.log("edit cell end. "+JSON.stringify(t));
-        return t;
+      this.setState(prevstate => {
+        const rows = prevstate.rows;
+        rows[id].grade = props.value;
+        return rows;
       });
     };    
  
@@ -114,21 +109,21 @@ class Gradebook extends Component {
                 </Grid>
               </Grid>
               <div style={{ height: 400, width: '100%' }}>
-                <DataGrid 
-                  rows={this.state.rows.map((row,index) => {
-                          return {id:index, assignmentGradeId: row.assignmentGradeId, name: row.name, email: row.email, grade: row.grade};
-                          } )
-                       } 
-                  columns={columns}                   
-                  onEditCellChange={this.handleEditCellChange}  />
-                <Button variant="outlined" color="primary" style={{margin: 10}} onClick={this.handleSubmit} >
-                  Submit
-                </Button>
+                <DataGrid rows={this.state.rows} columns={columns} onEditCellChange={this.handleEditCellChange}  />
+                <Button variant="outlined" color="primary" style={{margin: 10}} onClick={this.handleSubmit} >Submit</Button>
               </div>
               <ToastContainer autoClose={1500} />   
             </div>
             ); 
         };
+}
+ // check on properties.  location.assignment must exist  
+Gradebook.propTypes = {
+  location: (properties, propertyName, componentName) => {
+      if ( properties.location.assignment == undefined ) {
+        return new Error('Gradebook missing required property assignment.');
+    }
+  }
 }
 
 export default Gradebook;
