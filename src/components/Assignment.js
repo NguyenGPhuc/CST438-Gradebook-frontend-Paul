@@ -8,6 +8,10 @@ import Radio from '@material-ui/core/Radio';
 import {DataGrid} from '@material-ui/data-grid';
 import {SERVER_URL} from '../constants.js'
 
+// NOTE:  for OAuth security, http request must have
+//   credentials: 'include' 
+//
+
 class Assignment extends Component {
     constructor(props) {
       super(props);
@@ -24,13 +28,12 @@ class Assignment extends Component {
     fetch(`${SERVER_URL}/gradebook`, 
       {  
         method: 'GET', 
-        headers: { 'X-XSRF-TOKEN': token }, 
-        credentials: 'include'
+        headers: { 'X-XSRF-TOKEN': token }
       } )
     .then((response) => response.json()) 
     .then((responseData) => { 
       if (Array.isArray(responseData.assignments)) {
-        //  add to each row attribute id: index value of row  
+        //  add to each row attribute "id"  This is required by DataGrid  id is the index value of row in table 
         this.setState({ rows: responseData.assignments.map((row, index) => ( { id: index, ...row } )) });
       } else {
         toast.error("Fetch failed.", {
@@ -42,13 +45,12 @@ class Assignment extends Component {
   }
   
    onRadioClick = (event) => {
-    console.log("Assignment.onRadioClick "+JSON.stringify(event.target.value));
+    console.log("Assignment.onRadioClick " + event.target.value);
     this.setState({selected: event.target.value});
   }
   
   render() {
      const columns = [
-      { field: 'id', hide: true },
       {
         field: 'assignmentName',
         headerName: 'Assignment',
