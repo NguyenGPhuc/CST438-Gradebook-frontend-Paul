@@ -142,7 +142,7 @@ class Gradebook extends React.Component {
               </div>
               <div style={{ height: 400, width: '100%' }}>
                 <DataGrid rows={this.state.grades} columns={columns} onCellEditCommit={this.handleCellEditCommit}  />
-                <Button variant="outlined" color="primary" style={{margin: 10}} onClick={this.handleSubmit} >
+                <Button id="Submit" variant="outlined" color="primary" style={{margin: 10}} onClick={this.handleSubmit} >
                    Submit
                 </Button>
               </div>
