@@ -43,6 +43,39 @@ class Assignment extends React.Component {
     })
     .catch(err => console.error(err)); 
   }
+
+  postAssignment = () => {
+    console.log("Assignment.postAssignment check");
+    fetch('http://localhost:8080/instructor/add/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          assignmentId: this.state.assignmentId,
+          courseId: this.state.courseId,
+          assignmentName: this.state.assignmentName,
+          dueDate: this.state.dueDate,
+          courseTitle: this.state.courseTitle, 
+          needsGrading: this.state.needsGrading  
+        })
+      })
+
+        .then((response) => response.json()) 
+        .then((responseData) => { 
+        if (Array.isArray(responseData.assignments)) {
+          //  add to each assignment an "id"  This is required by DataGrid  "id" is the row index in the data grid table 
+          this.setState({ assignments: responseData.assignments.map((assignment, index) => ( { id: index, ...assignment } )) });
+        } else {
+          toast.error("Fetch failed.", {
+            position: toast.POSITION.BOTTOM_LEFT
+          });
+        }        
+      })
+      .catch(err => console.error(err));       
+  }
+  
   
    onRadioClick = (event) => {
     console.log("Assignment.onRadioClick " + event.target.value);
@@ -82,6 +115,10 @@ class Assignment extends React.Component {
             <Button component={Link} to={{pathname:'/gradebook',   assignment: assignmentSelected }} 
                     variant="outlined" color="primary" disabled={this.state.assignments.length===0}  style={{margin: 10}}>
               Grade
+            </Button>
+            <Button component={Link} to={{pathname:'/instructor/add',   assignment: assignmentSelected }} 
+                    variant="outlined" color="primary" disabled={this.state.assignments.length===0}  style={{margin: 10}}>
+              Add Assignment
             </Button>
             <ToastContainer autoClose={1500} /> 
           </div>
