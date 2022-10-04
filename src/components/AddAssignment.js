@@ -1,89 +1,95 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import 'react-toastify/dist/ReactToastify.css';
-import { Link } from 'react-router-dom'
-import Cookies from 'js-cookie';
-import Radio from '@mui/material/Radio';
-import {DataGrid} from '@mui/x-data-grid';
 import {SERVER_URL} from '../constants.js';
-import Assignment from './Assignment.js';
 import { ToastContainer, toast } from 'react-toastify';
-import PropTypes from 'prop-types'; 
 
 
 class AddAssignment extends React.Component {
     constructor(props) {
       super(props);
-      this.state={ assignmentId: this.props.assignmentId, assignmentName: '', dueDate: 'YYYY-MM-DD'};
+      this.state={coureId :'', assignmentName: '', dueDate: ''}
     };
 
- 
-  handleSubmit = () => {
-    const { assignmentId, assignmentName, dueDate } = this.state;
-    this.props.submit( assignmentId.trim(), assignmentName.trim(), dueDate.trim() );
-    console.log("Submit check");
-  }
-  
-  handleChange = (event) =>  {
-    this.setState({[event.target.id]: event.target.value});
-  }
 
-   componentDidMount() {
-    this.postAssignment();
-   }
+    handleChangeId = (event) =>  {
+        this.setState({coureId: event.target.value});
 
-    postAssignment = () => {
+        console.log(JSON.stringify(this.state));
+    };
+
+
+    handleChangeName = (event) =>  {
+        this.setState({assignmentName: event.target.value});
+
+        console.log(JSON.stringify(this.state));
+    };
+
+    handleChangeDate = (event) =>  {
+        this.setState({dueDate: event.target.value});
+
+        console.log(JSON.stringify(this.state));
+    };
+
+
+    handleSubmit = () => {
         console.log("Assignment.postAssignment check");
-        fetch('http://localhost:8081/instructor/add',
+        fetch(`${SERVER_URL}/instructor/add`,
+        // fetch("http://localhost:8081/instructor/add",
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              assignmentId: this.state.assignmentId,
-              assignmentName: this.state.assignmentName,
-              dueDate: this.state.dueDate,
-            })
-            //  .then((response) => response.json()) 
+                coureId: this.state.coureId,
+                assignmentName: this.state.assignmentName,
+                dueDate: this.state.dueDate,
+            }),
+          }).then(response => response.json()).then(responseData => {
+            if (responseData.assignmentName !== undefined) {
+                console.log("New assignment added to SQL");
+                toast.success("New assignment added to SQL", {position: toast.POSITION.BOTTOM_LEFT});
+            }
+            else {
+                console.log("Failed to add new assignment into SQL");
+                toast.error("Failed to add new assignment into SQL", {position: toast.POSITION.BOTTOM_LEFT});
+            }
           })
-      }
-    
+          .catch((err) => {
+                toast.warning("New SQL added, but an issue occured", {position: toast.POSITION.BOTTOM_LEFT});
+                console.error(err);
+          });
+        }
+  
     render() {
         return(
             <div> 
                 <h4> Add a new assignment </h4>
-                <TextField autoFocus style = {{width:200}} label="ID" name="assignmentId" 
-                    onChange={this.handleChange} value={this.state.id} /> 
+                <TextField autoFocus style = {{width:200}} label="Course ID" name="coureId" 
+                    onChange={this.handleChangeId} value={this.state.coureId} /> 
+                    {/* // onChange={this.handleChangeId} />  */}
                 <br/>
                 <br/>
-                <TextField style = {{width: 200}} label="Name" name="assignmentName" 
-                    onChange={this.handleChange} value={this.state.alias} /> 
+                <TextField autoFocus style = {{width: 200}} label="Name" name="assignmentName" 
+                    onChange={this.handleChangeName} value={this.state.assignmentName} /> 
+                    {/* onChange={this.handleChangeName}  />  */}
                 <br/>
                 <br/>
-                <TextField style = {{width: 200}} label="Due date" name="dueDate" 
-                    onChange={this.handleChange} value={this.state.alias} /> 
+                <TextField autoFocus style = {{width: 200}} label="Due date (YYYY-MM-DD)" name="dueDate" 
+                    onChange={this.handleChangeDate} value={this.state.dueDate} /> 
+                    {/* onChange={this.handleChangeDate}  />  */}
                 <br/>
                 <br/>
                 <Button variant="outlined" color="primary" style={{margin: 10}}
                     onClick={this.handleSubmit} >Submit</Button>
+
+                <ToastContainer autoClose={4000} />   
             </div>
         );
     }
     
 }
-
-AddAssignment.propTypes = {
-    assignmentId:            PropTypes.number.isRequired,
-    assignmentName:          PropTypes.number.isRequired,
-    dueDate:                 PropTypes.string.isRequired,
-    submit:                  PropTypes.func.isRequired,
-    fetch:                   PropTypes.func.isRequired
-};
 
 export default AddAssignment;
