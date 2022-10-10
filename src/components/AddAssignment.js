@@ -12,7 +12,7 @@ class AddAssignment extends React.Component {
       this.state={coureId :'', assignmentName: '', dueDate: ''}
     };
 
-
+    // Save information about id
     handleChangeId = (event) =>  {
         this.setState({coureId: event.target.value});
 
@@ -20,23 +20,24 @@ class AddAssignment extends React.Component {
     };
 
 
+    // Save information about name
     handleChangeName = (event) =>  {
         this.setState({assignmentName: event.target.value});
 
         console.log(JSON.stringify(this.state));
     };
 
+    // Save information about due date
     handleChangeDate = (event) =>  {
         this.setState({dueDate: event.target.value});
 
         console.log(JSON.stringify(this.state));
     };
 
-
+    // Calls fetch to put information into SQL.
     handleSubmit = () => {
         console.log("Assignment.postAssignment check");
         fetch(`${SERVER_URL}/instructor/add`,
-        // fetch("http://localhost:8081/instructor/add",
           {
             method: 'POST',
             headers: {
