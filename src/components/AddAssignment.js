@@ -48,7 +48,8 @@ class AddAssignment extends React.Component {
                 assignmentName: this.state.assignmentName,
                 dueDate: this.state.dueDate,
             }),
-          }).then(response => response.json()).then(responseData => {
+          })
+          .then(response => response.json()).then(responseData => {
             if (responseData.assignmentName !== undefined) {
                 console.log("New assignment added to SQL");
                 toast.success("New assignment added to SQL", {position: toast.POSITION.BOTTOM_LEFT});
@@ -59,7 +60,7 @@ class AddAssignment extends React.Component {
             }
           })
           .catch((err) => {
-                toast.warning("New SQL added, but an issue occured", {position: toast.POSITION.BOTTOM_LEFT});
+                toast.warning("New assignment added to SQL, check backend", {position: toast.POSITION.BOTTOM_LEFT});
                 console.error(err);
           });
         }
