@@ -10,8 +10,11 @@ import React from 'react';
 
 function App() {
 
+  
+
   return (
     <div className="App">
+      
       <AppBar position="static" color="default">
         <Toolbar>
            <Typography variant="h6" color="inherit">
@@ -24,7 +27,7 @@ function App() {
         <Route exact path='/' component={Assignment} />
         <Route path='/gradebook' component={Gradebook} />
 
-        <Route path='/instructor/add' component={AddAssignment} />
+        <Route path='/add' component={AddAssignment} />
        </Switch>
       </BrowserRouter>
     </div>
