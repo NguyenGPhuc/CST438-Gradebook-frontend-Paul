@@ -1,97 +1,71 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import 'react-toastify/dist/ReactToastify.css';
-import {SERVER_URL} from '../constants.js';
-import { ToastContainer, toast } from 'react-toastify';
-
-
-class AddAssignment extends React.Component {
-    constructor(props) {
+ 
+class AddAssignment extends Component {
+      constructor(props) {
       super(props);
-      this.state={coureId :'', assignmentName: '', dueDate: ''}
+      this.state = {open: false, name:"", dueDate:"", courseId: 0 };
     };
-
-    // Save information about id
-    handleChangeId = (event) =>  {
-        this.setState({coureId: event.target.value});
-
-        console.log(JSON.stringify(this.state));
-    };
-
-
-    // Save information about name
-    handleChangeName = (event) =>  {
-        this.setState({assignmentName: event.target.value});
-
-        console.log(JSON.stringify(this.state));
-    };
-
-    // Save information about due date
-    handleChangeDate = (event) =>  {
-        this.setState({dueDate: event.target.value});
-
-        console.log(JSON.stringify(this.state));
-    };
-
-    // Calls fetch to put information into SQL.
-    handleSubmit = () => {
-        console.log("Assignment.postAssignment check");
-        fetch(`${SERVER_URL}/instructor/add`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                coureId: this.state.coureId,
-                assignmentName: this.state.assignmentName,
-                dueDate: this.state.dueDate,
-            }),
-          })
-          .then(response => response.json()).then(responseData => {
-            if (responseData.assignmentName !== undefined) {
-                console.log("New assignment added to SQL");
-                toast.success("New assignment added to SQL", {position: toast.POSITION.BOTTOM_LEFT});
-            }
-            else {
-                console.log("Failed to add new assignment into SQL");
-                toast.error("Failed to add new assignment into SQL", {position: toast.POSITION.BOTTOM_LEFT});
-            }
-          })
-          .catch((err) => {
-                toast.warning("New assignment added to SQL, check backend", {position: toast.POSITION.BOTTOM_LEFT});
-                console.error(err);
-          });
-        }
-  
-    render() {
-        return(
-            <div> 
-                <h4> Add a new assignment </h4>
-                <TextField autoFocus style = {{width:200}} label="Course ID" name="coureId" 
-                    onChange={this.handleChangeId} value={this.state.coureId} /> 
-                    {/* // onChange={this.handleChangeId} />  */}
-                <br/>
-                <br/>
-                <TextField autoFocus style = {{width: 200}} label="Name" name="assignmentName" 
-                    onChange={this.handleChangeName} value={this.state.assignmentName} /> 
-                    {/* onChange={this.handleChangeName}  />  */}
-                <br/>
-                <br/>
-                <TextField autoFocus style = {{width: 200}} label="Due date (YYYY-MM-DD)" name="dueDate" 
-                    onChange={this.handleChangeDate} value={this.state.dueDate} /> 
-                    {/* onChange={this.handleChangeDate}  />  */}
-                <br/>
-                <br/>
-                <Button variant="outlined" color="primary" style={{margin: 10}}
-                    onClick={this.handleSubmit} >Submit</Button>
-
-                <ToastContainer autoClose={4000} />   
-            </div>
-        );
-    }
     
+    handleClickOpen = () => {
+      this.setState( {open:true} );
+    };
+ 
+    handleClose = () => {
+      this.setState( {open:false} );
+    };
+ 
+    handleChange = (event) => {
+    this.setState({[event.target.name]:event.target.value});
+    }
+ 
+  // Add the assignment and close the dialog
+    handleAdd = () => {
+       const assignment = {name: this.state.name, 
+                          dueDate: this.state.dueDate, 
+                          courseId: this.state.courseId}
+       this.props.add(assignment);
+       this.handleClose();
+    }
+ 
+    render()  { 
+      return (
+          <div>
+            <Button id="addAssignmentID" variant="outlined" color="primary" style={{margin: 10}} 
+                    onClick={this.handleClickOpen}>
+              New Assignment
+            </Button>
+            <Dialog open={this.state.open} onClose={this.handleClose}>
+                <DialogTitle>New Assignment</DialogTitle>
+                <DialogContent  style={{paddingTop: 20}} >
+                  <TextField id="courseID" autoFocus fullWidth label="Course Id" name="courseId" 
+                             onChange={this.handleChange}  />
+                  <br/><br/>
+                  <TextField id="assignmentNameID" fullWidth label="Assignment name" name="name"
+                              onChange={this.handleChange}  />
+                  <br/><br/>
+                  <TextField id="dueDateID"fullWidth label="Due Date" name="dueDate" 
+                              onChange={this.handleChange}  /> 
+                </DialogContent>
+                <DialogActions>
+                  <Button color="secondary" onClick={this.handleClose}>Cancel</Button>
+                  <Button id="addID" color="primary" onClick={this.handleAdd}>Add</Button>
+                </DialogActions>
+              </Dialog>      
+          </div>
+      ); 
+    }
 }
-
+ 
+// required property:  add is a function that is called by AddAssignment to perform the Add action
+AddAssignment.propTypes = {
+  add : PropTypes.func.isRequired
+}
+ 
 export default AddAssignment;
